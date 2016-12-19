@@ -10,7 +10,22 @@ module MonkeyReloader
     @@blacklist = nil
 
 
-    def init(whitelist = [], blacklist = [])
+    def config(opts = {})
+      whitelist = opts[:whitelist]
+      if !whitelist or whitelist.empty?
+        raise ArgumentError.new 'whitelist expected'
+      end
+
+      blacklist = opts.key?(:blacklist) ? opts[:blacklist] : [
+        # by default, block dangerous Rails behavior
+        'bin',
+        'config',
+        'db',
+        'log',
+        'script',
+        'spec',
+      ].select {|dir| Dir.exists? dir}
+
       @@whitelist = Set.new
       self.whitelist whitelist
 
@@ -23,6 +38,7 @@ module MonkeyReloader
     end
 
     def load
+      # reload all changed files
       wlist = whitelist
       blist = blacklist
 
@@ -37,9 +53,6 @@ module MonkeyReloader
 
       files.each do |file|
         Kernel.load file
-      end.map do |file|
-        # map back to relative pathnames for convenience
-        Pathname.new(file).relative_path_from(pwd).to_s
       end
     end
 
@@ -79,10 +92,16 @@ module MonkeyReloader
     end
 
     def expand_paths(paths = [])
-      # recalculate path expansions - caching will miss filesystem changes
+      # recalculate path expansions, but keep relative paths.
+      # note that caching will miss filesystem changes
+
+      pwd = Pathname.new Dir.pwd
       Array(paths).map do |path|
         Dir[path]
-      end.flatten
+      end.flatten.map do |path|
+        # map back to relative paths
+        Pathname.new(path).relative_path_from(pwd).to_s
+      end
     end
 
     def update_hash
@@ -106,8 +125,6 @@ module MonkeyReloader
       # a branch change
       files.select do |file|
         /\.rb$/.match file and File.exists? file
-      end.map do |file|
-        File.expand_path file
       end
     end
 
