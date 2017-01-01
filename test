@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# make testing this library easier
+
+if [ -z "$*" ]; then
+  cmd="MonkeyReloader.config(whitelist: '.').load"
+else
+  cmd="$*"
+fi
+
+echo $cmd
+echo
+ruby -Ilib -rmonkey-reloader -rawesome_print -e "ap $cmd"

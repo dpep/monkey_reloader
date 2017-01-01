@@ -113,13 +113,16 @@ module MonkeyReloader
       # return a list of changed files
 
       files = Set.new
-      awk = "awk '{ print $2 }'"
+      # grab last arg, space delemited
+      cut = "rev | cut -d' ' -f 1 | rev"
 
-      # find recent changes
-      files.merge `git status -s | #{awk}`.split
+      # find recent changes via git, eg.
+      #   ' M path/to/file'
+      #   'RM path/to/file -> path/to/renamed/file'
+      files.merge `git status -s | #{cut}`.split
 
       # find committed changes if there was a branch change / rebase
-      files.merge `git diff --name-status HEAD..#{@@hash} | #{awk}`.split
+      files.merge `git diff --name-status HEAD..#{@@hash} | #{cut}`.split
 
       # filter for ruby files and those that dissapeared during
       # a branch change
