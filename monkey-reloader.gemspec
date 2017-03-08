@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.summary     = "Monkey Reloading"
   s.authors     = ["Daniel Pepper"]
   s.files       = Dir.glob("lib/**/*")
-  s.homepage    = 'https://github.com/d1hotpep/monkey_reloader'
+  s.homepage    = 'https://github.com/dpep/monkey_reloader'
   s.license     = 'MIT'
   s.description = <<description
     fast IRB reloading for non-conventional file naming, using git
